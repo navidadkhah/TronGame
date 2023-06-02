@@ -1,0 +1,53 @@
+{
+	"general": {
+		"game_name": "Tron",
+		"command_files": [
+			"app/ks/commands"
+		],
+		"allowed_teams": {},
+		"allow_duplicate_team_nicknames": true,
+		"offline_mode": true,
+		"": "online configs",
+		"match_id": "0"
+	},
+
+	"net": {
+		"host": "0.0.0.0",
+		"port": 5000,
+		"keyfile": "certs/key.pem",
+		"certfile": "certs/cert.pem"
+	},
+
+	"gui": {
+		"host": "0.0.0.0",
+		"port": 5001,
+		"max_spectators": 3,
+		"save_replay": true,
+		"replay_dir": "replays",
+		"replay_filename": null,
+		"cycle_duration": 0.5,
+		"side_colors": {
+			"Blue": "#00FFFF",
+			"Yellow": "#FFFF00"
+		}
+	},
+
+	"sides": {
+		"Blue": ["0"],
+		"Yellow": ["0"]
+	},
+
+	"game_handler": {
+		"": "base game handler configs",
+		"start_time": "2017-11-08 00:50",
+		"start_waiting_time": 1,
+		"": "realtime game handler configs",
+		"cycle_duration": 0.5,
+		"first_cycle_duration": 3,
+		"max_total_commands": 200,
+		"max_team_commands": 100,
+		"max_agent_commands": 100,
+		"": "my configs",
+		"map_path": "maps/Test.json"
+	}
+}

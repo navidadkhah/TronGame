@@ -1,0 +1,24 @@
+{
+	"general": {
+		"command_files": [
+			"ks/commands"
+		],
+		"offline_mode": true
+	},
+
+	"net": {
+		"host": "localhost",
+		"port": 5000,
+		"max_tries": 5,
+		"retry_waiting_time": 1,
+		"timeout": 2
+	},
+
+	"ai": {
+		"": "creating a new decision thread each time a snapshot of game is received from server",
+		"create_new_thread": true,
+		"agent_name": "0",
+		"team_nickname": "PythonTeam1",
+		"token": "team_id1-xx"
+	}
+}

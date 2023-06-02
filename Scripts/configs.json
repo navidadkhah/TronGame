@@ -1,0 +1,5 @@
+{
+	"code_base_directory": "../",
+	"run_python_client": true,
+	"run_python_random_client": true
+}

@@ -1,0 +1,2 @@
+chillin-server==2.3.0
+koala-serializer==0.8.0
