@@ -49,67 +49,9 @@ class AI(RealtimeAI):
                 best_answer = ret
         return best_answer
 
-    def evaluate_score(self, world):
+    def evaluate_score(self, cur_ai):
+        if cur_ai.world.agents[cur_ai.my_side].wall_breaker_rem_time > 1:
 
-        if self.color == "Blue":
-            my_side = ECell.BlueWall
-            other_side = ECell.YellowWall
-            other_side_color = "Yellow"
-            my_color = "Blue"
-
-        else:
-            my_side = ECell.YellowWall
-            other_side = ECell.BlueWall
-            other_side_color = "Blue"
-            my_color = "Yellow"
-        if self.act is None:
-            if self.first_color == "Yellow":
-                return (world.agents[self.my_color].health * 200 + world.scores[self.my_color]) - \
-                       (world.agents["Blue"].health * 200 +
-                        world.scores["Blue"]), world
-            else:
-                return (world.agents[self.my_color].health * 200 + world.scores[self.my_color]) - \
-                       (world.agents["Yellow"].health * 200 +
-                        world.scores["Yellow"]), world
-
-        world.board[world.agents[other_side_color].position.y][world.agents[other_side_color].position.x] = my_side
-        world.scores[other_side_color] += world.constants.wall_score_coefficient
-
-        if self.act == EDirection.Right:
-
-            self.change(my_side, other_side, other_side_color, world, 1, 0, EDirection.Right)
-        elif self.act == EDirection.Left:
-            self.change(my_side, other_side, other_side_color, world, -1, 0, EDirection.Left)
-        elif self.act == EDirection.Up:
-            self.change(my_side, other_side, other_side_color, world, 0, -1, EDirection.Up)
-        elif self.act == EDirection.Down:
-            self.change(my_side, other_side, other_side_color, world, 0, 1, EDirection.Down)
-        else:
-            direction = world.agents[other_side_color].direction
-            world.agents[other_side_color].wall_breaker_rem_time = world.constants.wall_breaker_duration
-            if direction == EDirection.Right:
-                self.change(my_side, other_side, other_side_color, world, 1, 0, direction)
-            elif direction == EDirection.Left:
-                self.change(my_side, other_side, other_side_color, world, -1, 0, direction)
-            elif direction == EDirection.Up:
-                self.change(my_side, other_side, other_side_color, world, 0, -1, direction)
-            else:
-                self.change(my_side, other_side, other_side_color, world, 0, 1, direction)
-
-        if world.agents[other_side_color].health == -1:
-            self.isterminal = True
-        # return (world.agents[other_side_color].health * 20 + world.scores[other_side_color]) - \
-        #        (world.agents[my_color].health * 20 +
-        #         world.scores[my_color]), world
-
-        if self.first_color == "Yellow":
-            return (world.agents[self.first_color].health * 200 + world.scores[self.first_color]) - \
-                   (world.agents["Blue"].health * 200 +
-                    world.scores["Blue"]), world
-        else:
-            return (world.agents[self.first_color].health * 200 + world.scores[self.first_color]) - \
-                   (world.agents["Yellow"].health * 200 +
-                    world.scores["Yellow"]), world
 
     def change_direction(self, cur_ai, direction):
 
@@ -128,6 +70,8 @@ class AI(RealtimeAI):
         area_walls = cur_ai._get_our_agent_Area_wall_neighbors()
 
         best_answer = cur_ai.MN, []
+        our_score=0
+        their_score=0
 
         if cur_ai.world.agents[cur_ai.my_side].wall_breaker_rem_time > 1:
             # wall breaker is on
@@ -136,8 +80,11 @@ class AI(RealtimeAI):
             if my_team == "Yellow":
                 if blue_walls:
                     best_answer = self.get_next_nodes(self, cur_ai, blue_walls, move_list, depth)
+                    our_score+=1
+                    their_score-=1
                 elif empty_neighbors:
                     best_answer = self.get_next_nodes(self, cur_ai, empty_neighbors, move_list, depth)
+                    our_score+=1
                 elif yellow_walls:
                     best_answer = self.get_next_nodes(self, cur_ai, yellow_walls, move_list, depth)
                 else:
@@ -145,8 +92,11 @@ class AI(RealtimeAI):
             else:
                 if yellow_walls:
                     best_answer = self.get_next_nodes(self, cur_ai, yellow_walls, move_list, depth)
+                    our_score+=1
+                    their_score-=1
                 elif empty_neighbors:
                     best_answer = self.get_next_nodes(self, cur_ai, empty_neighbors, move_list, depth)
+                    our_score+=1
                 elif blue_walls:
                     best_answer = self.get_next_nodes(self, cur_ai, blue_walls, move_list, depth)
                 else:
@@ -157,10 +107,26 @@ class AI(RealtimeAI):
             cur_ai.world.agents[cur_ai.my_side].wall_breaker_cooldown -= 1
             if empty_neighbors:
                 best_answer = self.get_next_nodes(self, cur_ai, empty_neighbors, move_list, depth)
+                our_score+=1
             else:
                 if cur_ai.world.agents[my_team].wall_breaker_cooldown == 0 and not (
                         cur_ai.world.agents[my_team].direction in area_walls):
                     self.activate_wall_breaker(self, cur_ai)
+                    our_score+=1
+                elif cur_ai.world.agents[my_team].wall_breaker_cooldown != 0 and not (
+                        cur_ai.world.agents[empty_neighbors].direction in area_walls):
+                     if not (cur_ai.world.agents[my_team].direction in area_walls) and not (
+                             cur_ai.world.agents[empty_neighbors].direction in area_walls):
+                        our_score=-201
+                        cur_ai.world.agents[cur_ai.my_side].health -= 1
+                        their_score-=1
+                     elif cur_ai.world.agents[my_team].direction in area_walls:
+                        our_score-=201
+                        cur_ai.world.agents[cur_ai.my_side].health-=1
+
+
+
+                # to do
                 else:
                     if my_team == "Yellow":
                         if blue_walls:
@@ -177,7 +143,8 @@ class AI(RealtimeAI):
                         else:
                             self.send_command(ChangeDirection(random.choice(list(EDirection))))
 
-
+        cur_ai.world.scores[cur_ai.my_side] += our_score
+        cur_ai.world.scores[cur_ai.other_side] += their_score
 
 
     def client1(self):
